@@ -8,7 +8,7 @@ import {
 
 let lineUserProfile = null;
 
-// 將外部模組的方法掛載到 window，讓 HTML 的 onClick 找得到
+// 將所有外部模組與自定義函數掛載到 window，讓 HTML 的 onClick 找得到
 window.pullLever = pullLever;
 window.releaseLever = releaseLever;
 
@@ -26,10 +26,14 @@ async function initializeLiff() {
   }
 }
 
-// UI 模式切換
+// UI 模式切換（修復嚴格模式下的 event 錯誤）
 window.switchMode = function(mode) {
   clearSlotTimer();
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  
+  // 移除所有 tab 的 active 狀態
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(btn => btn.classList.remove('active'));
+  
   document.getElementById('modeInput').style.display = 'none';
   document.getElementById('modeRandom').style.display = 'none';
   document.getElementById('modeSlot').style.display = 'none';
@@ -38,14 +42,16 @@ window.switchMode = function(mode) {
   document.getElementById('num2').value = "";
   document.getElementById('num3').value = "";
   document.getElementById('randomDisplay').innerHTML = ""; 
-
-  event.target.classList.add('active');
   
+  // 根據傳入的模式設定 active 並顯示對應區塊
   if (mode === 'input') {
+    tabBtns[0].classList.add('active');
     document.getElementById('modeInput').style.display = 'block';
   } else if (mode === 'random') {
+    tabBtns[1].classList.add('active');
     document.getElementById('modeRandom').style.display = 'block';
   } else if (mode === 'slot') {
+    tabBtns[2].classList.add('active');
     document.getElementById('modeSlot').style.display = 'block';
     if (!slotRowState[0]) {
       startSlotTimeoutTimer(0);
@@ -53,7 +59,6 @@ window.switchMode = function(mode) {
   }
 };
 
-// 工具與渲染函式
 const POS_NAME = ["初","二","三","四","五","上"];
 
 function buildHexVis(bits, movingIdx) {
@@ -103,7 +108,7 @@ window.resetApp = function() {
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-function showResult(n1, n2, n3) {
+window.showResult = function(n1, n2, n3) {
   clearSlotTimer();
   let lowerIdx = n1 % 8 || 8;
   let upperIdx = n2 % 8 || 8;
@@ -128,8 +133,6 @@ function showResult(n1, n2, n3) {
     origHex: `${hexOrig.name}卦`, movingYao: `第${POS_NAME[movingIdx]}爻`, zhiHex: `${hexZhi.name}卦`
   }, lineUserProfile);
 
-  // === 這裡省略了原本超長的 HTML 組合邏輯，請將原本 index.html 裡的 html += ... 完整貼回這裡 ===
-  // 為了排版簡潔，我保留結構，您直接複製過來即可。
   let html = `<div class="card" style="position:relative;">`;
   html += `<div class="seal-stamp stamped">${hexOrig.name}</div>`;
   if(q) html += `<div class="question-echo">所問之事：${escapeHtml(q)}</div>`;
@@ -163,7 +166,6 @@ function showResult(n1, n2, n3) {
   document.getElementById('inputCard').style.display = "none";
   document.getElementById('resultArea').innerHTML = html;
 
-  // 綁定 LINE 按鈕事件
   document.getElementById('closeLiffBtn').addEventListener('click', () => {
     liff.isInClient() ? liff.closeWindow() : alert("此功能僅在 LINE 內部開啟時有效。");
   });
@@ -177,7 +179,6 @@ function showResult(n1, n2, n3) {
     catch (err) { alert("發送失敗"); }
   });
 
-  // Hover 事件綁定
   const termHovers = document.querySelectorAll('.term-hover');
   termHovers.forEach(term => {
     term.addEventListener('click', (e) => {
@@ -189,7 +190,6 @@ function showResult(n1, n2, n3) {
   });
 }
 
-// 點擊空白處關閉提示
 document.addEventListener('click', () => {
   document.querySelectorAll('.term-hover').forEach(t => t.classList.remove('active'));
 });
