@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>問卦 · 傅佩榮數字卦</title>
+<title>易經問卦</title>
 <!-- 引入 LINE LIFF SDK -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
@@ -334,14 +334,14 @@
 <div class="app" id="app">
 
   <header>
-    <div class="eyebrow">六 十 四 卦 · 數 字 卦</div>
+    <div class="eyebrow">傅 佩 榮 · 六 十 四 卦 · 數 字 卦</div>
     <h1 id="greetingTitle">問 卦</h1>
-    <div class="sub">依照傅佩榮教授之法，心靜默想問題，並填入三組三位數字。</div>
+    <div class="sub">依傅佩榮教授之法，心靜默問，填入三組三位數字。</div>
   </header>
 
   <!-- 輸入問題與數字 -->
   <div class="card" id="inputCard">
-    <label class="field-label">想問之事 (選填)</label>
+    <label class="field-label">想問之事</label>
     <textarea id="question" placeholder="例如: 這個決定現在適合行動嗎？"></textarea>
     
     <label class="field-label">請輸入三組隨機數字 (如: 381, 755, 902)</label>
@@ -353,7 +353,7 @@
     </div>
     <!-- 新增：交給天意的隨機按鈕，增加趣味性與便利性 -->
     <button type="button" id="randomNumBtn" style="width: 100%; margin-top: 4px; margin-bottom: 16px; border: 1px dashed var(--brass-soft); background: rgba(169, 133, 79, 0.05); color: var(--brass); font-family: 'Noto Sans TC', sans-serif; font-size: 14px; padding: 10px 0; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
-      🎲 交給天意 (隨機抽出三組數字)
+      🎲 交予天意 (隨機抽出三組數字)
     </button>
     
 
@@ -403,7 +403,7 @@
         liff.login();
       } else {
         lineUserProfile = await liff.getProfile();
-        document.getElementById('greetingTitle').textContent = `${lineUserProfile.displayName}，問卦`;
+        document.getElementById('greetingTitle').textContent = `${lineUserProfile.displayName}道友，問卦`;
       }
     } catch (err) {
       console.error("LIFF 初始化失敗或未在 LINE 環境中執行", err);
