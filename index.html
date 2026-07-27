@@ -152,20 +152,20 @@
     font-family: "Noto Sans TC", sans-serif; 
   }
 
-  /* ---- 三台獨立拉霸機 UI ---- */
+  /* ---- 三台獨立拉霸機 UI 及實體拉桿 ---- */
   .slot-machine-container {
     background: #2a241c;
     border: 2px solid var(--brass);
     border-radius: 8px;
-    padding: 14px 12px;
+    padding: 14px 10px;
     margin: 12px 0 16px;
     box-shadow: inset 0 0 12px rgba(0,0,0,0.8), 0 4px 10px rgba(0,0,0,0.2);
   }
   .slot-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 14px;
     background: #17140f;
     padding: 8px 10px;
     border-radius: 6px;
@@ -176,7 +176,7 @@
     font-size: 12px;
     color: var(--brass);
     font-weight: 700;
-    width: 38px;
+    width: 36px;
     letter-spacing: 0.05em;
   }
   .slot-window {
@@ -186,8 +186,8 @@
     justify-content: center;
   }
   .slot-reel {
-    width: 34px;
-    height: 44px;
+    width: 36px;
+    height: 46px;
     background: radial-gradient(circle, #fff 0%, #e6dfcc 100%);
     border: 1px solid #7d6640;
     border-radius: 4px;
@@ -201,11 +201,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.5s ease-out;
+    transition: transform 0.4s cubic-bezier(0.15, 0.85, 0.35, 1.2);
   }
   .slot-num {
-    height: 44px;
-    line-height: 44px;
+    height: 46px;
+    line-height: 46px;
     font-family: "Noto Serif TC", serif;
     font-size: 22px;
     font-weight: 900;
@@ -213,32 +213,72 @@
     text-shadow: 0 1px 1px rgba(255,255,255,0.8);
   }
   .slot-strip.spinning {
-    animation: reelSpin 0.12s linear infinite;
+    animation: reelSpin 0.09s linear infinite;
   }
   @keyframes reelSpin {
     0% { transform: translateY(0); }
-    100% { transform: translateY(-440px); }
+    100% { transform: translateY(-460px); }
   }
 
-  .slot-btn {
-    padding: 8px 10px;
-    font-size: 12px;
-    font-family: "Noto Sans TC", sans-serif;
-    font-weight: 700;
-    border-radius: 4px;
-    border: 1px solid var(--brass);
-    background: linear-gradient(180deg, var(--brass), var(--brass-soft));
-    color: #fff;
+  /* ---- 擬真拉霸桿樣式 (Lever UI) ---- */
+  .lever-container {
+    width: 32px;
+    height: 52px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
     cursor: pointer;
-    white-space: nowrap;
-    margin-top: 0;
-    width: auto;
+    user-select: none;
+    -webkit-user-select: none;
   }
-  .slot-btn:disabled {
-    opacity: 0.4;
+  .lever-container.disabled {
+    opacity: 0.3;
     cursor: not-allowed;
-    background: #4a4237;
-    border-color: #665b4c;
+    pointer-events: none;
+  }
+  .lever-base {
+    width: 16px;
+    height: 18px;
+    background: linear-gradient(180deg, #7d6640, #3a2e1b);
+    border: 1px solid #a9854f;
+    border-radius: 3px;
+    position: absolute;
+    bottom: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+  .lever-arm {
+    width: 6px;
+    height: 38px;
+    background: linear-gradient(90deg, #d4af37, #fff, #aa820a);
+    border-radius: 3px;
+    position: absolute;
+    bottom: 8px;
+    transform-origin: bottom center;
+    transition: transform 0.3s cubic-bezier(0.5, 0, 0.25, 1);
+  }
+  .lever-ball {
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(circle at 30% 30%, #ff5252, #8f2c22, #4a0000);
+    border-radius: 50%;
+    position: absolute;
+    top: -8px;
+    left: -5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+  }
+  /* 拉桿被拉下與回彈類別 */
+  .lever-container.pulled .lever-arm {
+    transform: rotateX(60deg) scaleY(0.5);
+  }
+  .lever-container.rebounding .lever-arm {
+    animation: leverRebound 0.4s ease-out;
+  }
+  @keyframes leverRebound {
+    0% { transform: rotateX(60deg) scaleY(0.5); }
+    50% { transform: rotateX(-15deg) scaleY(1.05); }
+    75% { transform: rotateX(5deg) scaleY(0.98); }
+    100% { transform: rotateX(0deg) scaleY(1); }
   }
 
   label.field-label{
@@ -278,7 +318,7 @@
   .info-accordion-content p:last-child { margin-bottom: 0; }
   .info-accordion-content strong { color: var(--ink); }
 
-  /* ---- 動態名詞解釋 Hover/Click (結果區塊用) ---- */
+  /* ---- 動態名詞解釋 Hover/Click ---- */
   .term-hover {
     position: relative;
     display: inline-flex;
@@ -488,7 +528,7 @@
       </button>
     </div>
 
-    <!-- 模式 3: 三台獨立拉霸機 -->
+    <!-- 模式 3: 三台獨立實體拉霸機 -->
     <div id="modeSlot" style="display: none;">
       <div class="slot-machine-container">
         <!-- 上台 (第一台) -->
@@ -499,7 +539,10 @@
             <div class="slot-reel"><div class="slot-strip" id="reel-0-1"></div></div>
             <div class="slot-reel"><div class="slot-strip" id="reel-0-2"></div></div>
           </div>
-          <button type="button" class="slot-btn" id="slotBtn-0" onclick="triggerSlotRow(0)">拉動第一台</button>
+          <div class="lever-container" id="lever-0" onmousedown="pullLever(0)" onmouseup="releaseLever(0)" ontouchstart="pullLever(0)" ontouchend="releaseLever(0)">
+            <div class="lever-arm"><div class="lever-ball"></div></div>
+            <div class="lever-base"></div>
+          </div>
         </div>
         <!-- 中台 (第二台) -->
         <div class="slot-row">
@@ -509,7 +552,10 @@
             <div class="slot-reel"><div class="slot-strip" id="reel-1-1"></div></div>
             <div class="slot-reel"><div class="slot-strip" id="reel-1-2"></div></div>
           </div>
-          <button type="button" class="slot-btn" id="slotBtn-1" disabled onclick="triggerSlotRow(1)">拉動第二台</button>
+          <div class="lever-container disabled" id="lever-1" onmousedown="pullLever(1)" onmouseup="releaseLever(1)" ontouchstart="pullLever(1)" ontouchend="releaseLever(1)">
+            <div class="lever-arm"><div class="lever-ball"></div></div>
+            <div class="lever-base"></div>
+          </div>
         </div>
         <!-- 下台 (第三台) -->
         <div class="slot-row">
@@ -519,7 +565,10 @@
             <div class="slot-reel"><div class="slot-strip" id="reel-2-1"></div></div>
             <div class="slot-reel"><div class="slot-strip" id="reel-2-2"></div></div>
           </div>
-          <button type="button" class="slot-btn" id="slotBtn-2" disabled onclick="triggerSlotRow(2)">拉動第三台</button>
+          <div class="lever-container disabled" id="lever-2" onmousedown="pullLever(2)" onmouseup="releaseLever(2)" ontouchstart="pullLever(2)" ontouchend="releaseLever(2)">
+            <div class="lever-arm"><div class="lever-ball"></div></div>
+            <div class="lever-base"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -673,14 +722,14 @@
   addHex(1,"乾","乾","乾","元亨利貞。","大吉大利,萬事亨通,只要合乎正道,前景光明。是充滿創造力與領導力的開端。",[["初九:潛龍勿用。","時機未到,如潛伏水中的龍,應韜光養晦,暫不宜有所行動。"],["九二:見龍在田,利見大人。","才能已展露頭角,適合尋求貴人相助或請益前輩。"],["九三:君子終日乾乾,夕惕若厲,無咎。","整日勤奮不懈,晚上仍戒慎警惕,如此雖處險境亦無災咎。"],["九四:或躍在淵,無咎。","處於進退抉擇之際,審慎嘗試躍升亦无妨,把握分寸即可。"],["九五:飛龍在天,利見大人。","時機成熟,才德兼備,如龍飛翔天際,大展鴻圖,宜與賢者共事。"],["上九:亢龍有悔。","過於剛強、居高自滿,已到極限,恐生悔恨,提醒盛極必衰。"]]);
   addHex(2,"坤","坤","坤","元亨,利牝馬之貞。君子有攸往,先迷後得主,利。西南得朋,東北喪朋,安貞吉。","大吉,如母馬般柔順而能致遠。君子有所前往,起初或許迷茫,之後終能找到依循的方向而獲利。宜與同類相聚合作,安於柔順正道則吉祥。",[["初六:履霜,堅冰至。","踩到薄霜,便知寒冬將至;提醒及早察覺徵兆,防患未然。"],["六二:直方大,不習無不利。","為人正直、方正、寬大,即使不刻意學習造作,行事也無不順利。"],["六三:含章可貞,或從王事,無成有終。","內斂才華、守正待時,若參與大事雖不居功,但終能有所成就。"],["六四:括囊,無咎無譽。","像紮緊口袋般謹言慎行,雖無過失,也難有稱譽,宜低調自守。"],["六五:黃裳,元吉。","如穿著黃色裙裳般居中守正、謙遜得體,大吉大利。"],["上六:龍戰於野,其血玄黃。","陰極而與陽相爭,如龍戰於荒野,兩敗俱傷,提醒過剛過柔皆有禍。"]]);
   addHex(3,"屯","坎","震","元亨利貞,勿用有攸往,利建侯。","萬事草創,雖大有可為卻充滿艱難,不宜貿然遠行,適合腳踏實地建立根基、尋求協助。",[["初九:磐桓,利居貞,利建侯。","起步艱難、徘徊不前,宜安守正道,適合尋求可靠的夥伴或靠山。"],["六二:屯如邅如,乘馬班如,匪寇婚媾,女子貞不字,十年乃字。","處境艱難猶豫不決,看似有威脅實則是機緣(如求婚者),需耐心等待時機成熟。"],["六三:即鹿無虞,惟入于林中,君子幾,不如舍,往吝。","如同無嚮導追鹿誤入林中,明智者應見機而止,勉強前進恐生困窘。"],["六四:乘馬班如,求婚媾,往吉,無不利。","猶豫之後主動尋求合作或姻緣,前往可獲吉祥,諸事順利。"],["九五:屯其膏,小貞吉,大貞凶。","恩澤未能廣布,小事守正尚可獲吉,若圖謀大事則有凶險,宜循序漸進。"],["上六:乘馬班如,泣血漣如。","進退兩難、徒然悲泣,象徵處境極為艱困,提醒此時應靜待而非強求。"]]);
-  addHex(4,"蒙","艮","坎","亨。匪我求童蒙,童蒙求我。初筮告,再三瀆,瀆則不告。利貞。","啟蒙求教之時,應由學習者主動求教,而非強加於人;初次誠心求問可得指引,若一再輕率褻瀆問卜則不予回應。守正則利。",[["初六:發蒙,利用刑人,用說桎梏,以往吝。","啟發蒙昧宜用規範與紀律導正,但若一味用刑罰束縛而不知變通,前進將有困窘。"],["九二:包蒙吉,納婦吉,子克家。","以包容之心教導蒙昧者可獲吉祥,如娶妻持家、子嗣能撐起家業般順遂。"],["六三:勿用取女,見金夫,不有躬,無攸利。","不宜娶這樣的女子,見利忘義、不能自持,如此行事沒有好處。"],["六四:困蒙,吝。","深陷蒙昧無人啟發,處境困窘,提醒應主動尋求良師益友。"],["六五:童蒙,吉。","如孩童般純真虛心受教,吉祥,提醒謙虛求學者必有所得。"],["上九:擊蒙,不利為寇,利禦寇。","對頑固蒙昧者需嚴加導正,但不宜過度苛責如同攻寇,應以防禦、保護的心態教導為宜。"]]);
-  addHex(5,"需","坎","乾","有孚,光亨,貞吉,利涉大川。","心懷誠信,耐心等待時機,則能光明亨通、守正得吉,適合涉險渡難、成就大事。",[["初九:需于郊,利用恆,無咎。","在郊外等待,遠離險境,持之以恆、耐心守候,沒有災咎。"],["九二:需于沙,小有言,終吉。","等待中稍靠近險境(如沙地),雖有些許言語紛擾,終究吉祥。"],["九三:需于泥,致寇至。","等待中已逼近危險(如泥沼),稍有不慎恐招致外來侵擾,提醒宜加倍謹慎。"],["六四:需于血,出自穴。","已身陷險境之中,但若能沉著應對,終能脫離危險境地。"],["九五:需于酒食,貞吉。","等待中怡然自得如享用酒食,守正可獲吉祥,象徵時機將至,宜安心以待。"],["上六:入于穴,有不速之客三人來,敬之終吉。","已然安頓下來,忽有不請自來的客人,以誠敬相待,終能獲得吉祥。"]]);
+  addHex(4,"蒙","艮","坎","亨。匪我求童蒙,童蒙求我。初筮告,再三瀆,瀆則不告。利貞。","啟蒙求教之時,應由學習者主動求教,而非強加於人;初次誠心求問可得指引,若一再輕率褻瀆問卜則不予回應。守正則利。",[["初六:發蒙,利用刑人,用說桎梏,以往吝。","啟發蒙昧宜用規範與紀律導正,但若一味用刑罰束縛而不知變通,前進將有困窘。"],["九二:包蒙吉,納婦吉,子克家。","以包容之心教導蒙昧者可獲吉祥,如娶妻持家、子嗣能撐起家業般順遂。"],["六三:勿用取女,見金夫,不有躬,無攸利。","不宜娶這樣的女子,見利忘義、不有躬,沒有好處。"],["六四:困蒙,吝。","深陷蒙昧無人啟發,處境困窘,提醒應主動尋求良師益友。"],["六五:童蒙,吉。","如孩童般純真虛心受教,吉祥,提醒謙虛求學者必有所得。"],["上九:擊蒙,不利為寇,利禦寇。","對頑固蒙昧者需嚴加導正,但不宜過度苛責如同攻寇,應以防禦、保護的心態教導為宜。"]]);
+  addHex(5,"需","坎","乾","有孚,光亨,貞吉,利涉大川。","心懷誠信,耐心等待時機,則能光明亨通,守正得吉,適合涉險渡難,成就大事。",[["初九:需于郊,利用恆,無咎。","在郊外等待,遠離險境,持之以恆,耐心守候,沒有災咎。"],["九二:需于沙,小有言,終吉。","等待中稍靠近險境(如沙地),雖有些許言語紛擾,終究吉祥。"],["九三:需于泥,致寇至。","等待中已逼近危險(如泥沼),稍有不慎恐招致外來侵擾,提醒宜加倍謹慎。"],["六四:需于血,出自穴。","已身陷險境之中,但若能沉著應對,終能脫離危險境地。"],["九五:需于酒食,貞吉。","等待中怡然自得如享用酒食,守正可獲吉祥,象徵時機將至,宜安心以待。"],["上六:入于穴,有不速之客三人來,敬之終吉。","已然安頓下來,忽有不請自來的客人,以誠敬相待,終能獲得吉祥。"]]);
 
   // ==========================================
-  // 4. 三台獨立拉霸機 (含 5秒旋轉 & 10秒逾時機制)
+  // 4. 三台擬真拉霸機 (含動畫與 3秒旋轉/10秒逾時機制)
   // ==========================================
   let slotTimeoutTimer = null;
-  let slotRowState = [false, false, false]; // 紀錄三台是否已停穩
+  let slotRowState = [false, false, false]; 
 
   function initSlotReels() {
     for (let r = 0; r < 3; r++) {
@@ -692,13 +741,12 @@
           html += `<div class="slot-num">${i % 10}</div>`;
         }
         strip.innerHTML = html;
-        strip.style.transform = `translateY(-${(r + c + 1) * 44}px)`;
+        strip.style.transform = `translateY(-${(r + c + 1) * 46}px)`;
       }
     }
   }
   initSlotReels();
 
-  // 清除計時器
   function clearSlotTimer() {
     if (slotTimeoutTimer) {
       clearTimeout(slotTimeoutTimer);
@@ -706,63 +754,88 @@
     }
   }
 
-  // 設定 10 秒逾時自動幫忙點擊
   function startSlotTimeoutTimer(rowIndex) {
     clearSlotTimer();
     slotTimeoutTimer = setTimeout(() => {
-      console.log(`[自動觸發] 第 ${rowIndex + 1} 台超過 10 秒未點擊，系統自動啟動。`);
-      triggerSlotRow(rowIndex);
+      console.log(`[自動觸發] 第 ${rowIndex + 1} 台超過 10 秒未拉動，自動幫忙拉下。`);
+      autoPullLever(rowIndex);
     }, 10000);
   }
 
-  // 觸發單台拉霸機
-  window.triggerSlotRow = function(rowIndex) {
-    clearSlotTimer();
-    const btn = document.getElementById(`slotBtn-${rowIndex}`);
-    if (btn) btn.disabled = true;
+  // 按下與放開拉桿的擬真互動
+  window.pullLever = function(rowIndex) {
+    const lever = document.getElementById(`lever-${rowIndex}`);
+    if (!lever || lever.classList.contains('disabled')) return;
+    lever.classList.remove('rebounding');
+    lever.classList.add('pulled');
+  };
 
-    // 開啓該台 3 個滾軸的旋轉動畫
+  window.releaseLever = function(rowIndex) {
+    const lever = document.getElementById(`lever-${rowIndex}`);
+    if (!lever || lever.classList.contains('disabled') || !lever.classList.contains('pulled')) return;
+    
+    lever.classList.remove('pulled');
+    lever.classList.add('rebounding');
+    
+    // 觸發旋轉邏輯
+    startSpinRow(rowIndex);
+  };
+
+  // 10秒逾時幫忙拉動的視覺效果
+  function autoPullLever(rowIndex) {
+    pullLever(rowIndex);
+    setTimeout(() => {
+      releaseLever(rowIndex);
+    }, 300);
+  }
+
+  // 核心 3 秒旋轉邏輯（三個滾軸依次停格）
+  function startSpinRow(rowIndex) {
+    clearSlotTimer();
+    const lever = document.getElementById(`lever-${rowIndex}`);
+    if (lever) lever.classList.add('disabled');
+
+    // 開啓該台 3 個滾軸旋轉動畫
     for (let c = 0; c < 3; c++) {
       const strip = document.getElementById(`reel-${rowIndex}-${c}`);
       strip.classList.add('spinning');
     }
 
-    // 隨機生成 100~999 之間的數字
     const numVal = Math.floor(Math.random() * 900) + 100;
     const numStr = numVal.toString();
-    const targetInput = document.getElementById(`num${rowIndex + 1}`);
-    targetInput.value = numVal;
+    document.getElementById(`num${rowIndex + 1}`).value = numVal;
 
-    // 5 秒內從左至右依次停穩 (3.8s, 4.4s, 5.0s)
+    // 總時間為 3 秒，三顆滾軸分別在 2.5s, 2.75s, 3.0s 依序定格停穩
     for (let c = 0; c < 3; c++) {
       const targetDigit = parseInt(numStr[c]);
-      const stopDelay = 3800 + c * 600; // 5 秒內完畢
+      const stopDelay = 2500 + c * 250; 
 
       setTimeout(() => {
         const strip = document.getElementById(`reel-${rowIndex}-${c}`);
         strip.classList.remove('spinning');
-        strip.style.transform = `translateY(-${targetDigit * 44}px)`;
+        strip.style.transform = `translateY(-${targetDigit * 46}px)`;
 
-        // 當最後一個數字停穩時
+        // 該台三個數字完全停穩
         if (c === 2) {
           slotRowState[rowIndex] = true;
-          if (btn) btn.textContent = '已完成';
 
-          // 解鎖下一台按鈕並啟動 10 秒倒數
+          // 解鎖下一台並啟動 10 秒倒數
           if (rowIndex < 2) {
-            const nextBtn = document.getElementById(`slotBtn-${rowIndex + 1}`);
-            if (nextBtn) {
-              nextBtn.disabled = false;
+            const nextLever = document.getElementById(`lever-${rowIndex + 1}`);
+            if (nextLever) {
+              nextLever.classList.remove('disabled');
               startSlotTimeoutTimer(rowIndex + 1);
             }
           } else {
-            // 三台全部完成
-            alert(`🎰 三台拉霸機已全部停穩！\n獲得數字：${document.getElementById('num1').value}, ${document.getElementById('num2').value}, ${document.getElementById('num3').value}\n請點擊下方「開始解卦」！`);
+            // 三台全部停穩
+            setTimeout(() => {
+              alert(`🎰 三台拉霸機已全部停穩！\n獲得數字：${document.getElementById('num1').value}, ${document.getElementById('num2').value}, ${document.getElementById('num3').value}\n請點擊下方「開始解卦」！`);
+            }, 300);
           }
         }
       }, stopDelay);
     }
-  };
+  }
 
   // 切換模式頁籤
   window.switchMode = function(mode) {
@@ -782,7 +855,6 @@
       event.target.classList.add('active');
       document.getElementById('modeSlot').style.display = 'block';
       
-      // 切換到拉霸模式時，若第一台尚未執行，啟動第一台 10 秒倒數
       if (!slotRowState[0]) {
         startSlotTimeoutTimer(0);
       }
@@ -790,7 +862,7 @@
   };
 
   // ==========================================
-  // 5. UI 互動與渲染邏輯
+  // 5. UI 互動與解卦渲染邏輯
   // ==========================================
   const startBtn = document.getElementById('startBtn');
   const inputCard = document.getElementById('inputCard');
@@ -994,12 +1066,11 @@
   function resetApp(){
     clearSlotTimer();
     slotRowState = [false, false, false];
-    document.getElementById('slotBtn-0').disabled = false;
-    document.getElementById('slotBtn-0').textContent = '拉動第一台';
-    document.getElementById('slotBtn-1').disabled = true;
-    document.getElementById('slotBtn-1').textContent = '拉動第二台';
-    document.getElementById('slotBtn-2').disabled = true;
-    document.getElementById('slotBtn-2').textContent = '拉動第三台';
+    document.getElementById('lever-0').classList.remove('disabled', 'pulled', 'rebounding');
+    document.getElementById('lever-1').classList.add('disabled');
+    document.getElementById('lever-1').classList.remove('pulled', 'rebounding');
+    document.getElementById('lever-2').classList.add('disabled');
+    document.getElementById('lever-2').classList.remove('pulled', 'rebounding');
     
     resultArea.innerHTML = "";
     document.getElementById('question').value = "";
