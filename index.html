@@ -432,6 +432,27 @@
 
   async function saveLogToFirebase(logData) {
     try {
+      // 1. 免費發送請求給公開 API 取得使用者的真實 IP
+      let userIp = "未知";
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipRes.json();
+        userIp = ipData.ip;
+      } catch (ipErr) {
+        console.warn("無法取得 IP 位址:", ipErr);
+      }
+  
+      // 2. 取得 LINE 使用者的 ID Token 與基本資料
+      let idToken = "";
+      let lineUserId = "未知";
+      if (liff.isLoggedIn()) {
+        idToken = liff.getIDToken();
+        if (lineUserProfile) {
+          lineUserId = lineUserProfile.userId;
+        }
+      }
+  
+      // 3. 直接寫入 Firestore (包含 IP 與裝置資訊)
       const docRef = await addDoc(collection(db, "divination_logs"), {
         timestamp: serverTimestamp(),
         question: logData.question || "未填寫",
@@ -439,14 +460,24 @@
         origHex: logData.origHex,
         movingYao: logData.movingYao,
         zhiHex: logData.zhiHex,
-        lineDisplayName: lineUserProfile ? lineUserProfile.displayName : "網頁版匿名用戶"
+        
+        // 使用者身份資訊
+        lineUserId: lineUserId,
+        lineDisplayName: lineUserProfile ? lineUserProfile.displayName : "網頁版匿名用戶",
+        
+        // 網路與裝置 Payload 紀錄
+        requestPayload: {
+          ip: userIp,
+          userAgent: navigator.userAgent, // 瀏覽器/手機型號與 LINE 版本
+          language: navigator.language    // 系統語言
+        }
       });
+  
       console.log("✅ Log 已成功寫入 Firestore，文件 ID:", docRef.id);
     } catch (e) {
       console.error("❌ 寫入 Log 失敗:", e);
     }
   }
-
   // ==========================================
   // 3. 易經核心資料與邏輯區塊
   // ==========================================
