@@ -98,29 +98,32 @@
       <div class="pinball-machine-container">
         <!-- 狀態顯示 -->
         <div class="pinball-header">
-          <div>剩餘彈珠：<span id="pinballRemain" style="color:var(--seal-bright); font-weight:bold;">9</span></div>
-          <div id="pinballCollected" style="letter-spacing: 2px;">尚未擊出彈珠</div>
+          <div>剩餘：<span id="pinballRemain" style="color:var(--seal-bright); font-weight:bold; font-size:16px;">9</span> 球</div>
+          <div id="pinballCollected" style="letter-spacing: 2px; font-weight:bold;">尚未擊出</div>
         </div>
         
         <!-- 遊戲區 -->
         <div class="pinball-play-area">
-          <div class="pinball-board" id="pinballBoard">
-            <!-- 彈珠會在此動態生成 -->
-          </div>
+          <!-- 真實物理運算畫布 (寬330, 含右側發射道) -->
+          <canvas id="pachinkoCanvas" width="330" height="360" style="display: block; width: 100%; height: auto;"></canvas>
           
-          <!-- 底部號碼洞 -->
+          <!-- 底部號碼標示 (只做視覺裝飾，實際碰撞在 Canvas 內) -->
           <div class="pinball-slots-row">
             <div class="p-slot">0</div><div class="p-slot">1</div>
             <div class="p-slot">2</div><div class="p-slot">3</div>
             <div class="p-slot">4</div><div class="p-slot">5</div>
             <div class="p-slot">6</div><div class="p-slot">7</div>
             <div class="p-slot">8</div><div class="p-slot">9</div>
+            <div class="p-slot shooter-slot"></div> <!-- 發射道底部佔位 -->
           </div>
           
-          <!-- 發射拉桿 -->
-          <div class="pinball-shooter" id="pinballPlunger" onmousedown="pullPlunger()" onmouseup="releasePlunger()" ontouchstart="pullPlunger()" ontouchend="releasePlunger()">
-            <div class="p-rod"></div>
-            <div class="p-knob"></div>
+          <!-- 發射拉桿與蓄力槽 -->
+          <div class="pinball-shooter-area">
+            <div class="power-bar"><div class="power-fill" id="powerFill"></div></div>
+            <div class="pinball-shooter" id="pinballPlunger" onmousedown="pullPlunger()" onmouseup="releasePlunger()" ontouchstart="pullPlunger()" ontouchend="releasePlunger()">
+              <div class="p-rod"></div>
+              <div class="p-knob"></div>
+            </div>
           </div>
         </div>
       </div>
