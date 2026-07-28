@@ -15,11 +15,22 @@ let powerTimer = null;
 let isPulling = false;
 
 // 發射軌道「導引彎道」參數：球從發射道垂直衝上來後，
-// 在這段高度區間內會被導引彎道逐漸從「垂直向上」轉成「水平向左」，
-// 才能真正飛出發射道、落進釘子盤面（模擬真實彈珠台頂端的彎道）。
-const CURVE_BOTTOM = 170; // 彎道開始的 y 座標（球從下往上進入這裡開始轉彎）
-const CURVE_TOP = 60;     // 彎道結束的 y 座標（轉彎完成，此時已完全變成水平向左）
-const LANE_X = 300;       // 發射道與盤面的分界（僅用於視覺與判斷落點，不再是實體牆）
+// 進入這段高度以下就會開始被導引彎道拉走，在固定的 BEND_FRAMES 影格內
+// 把速度方向從「垂直向上」平滑轉成「水平向左」，才能真正飛出發射道、落進釘子盤面。
+// 用固定影格數（而不是用某個 y 座標當作「轉彎完成」的終點）是為了避免力道不同時
+// 轉彎轉到一半、球已經沒有上升動能卻還沒轉完，導致卡住飛不出去。
+const CURVE_BOTTOM = 170;  // 開始轉彎的 y 座標
+const BEND_FRAMES = 35;    // 轉彎耗費的固定影格數
+
+// 底部號碼格（口袋）參數：從 POCKET_TOP 到畫布底部這段，
+// 每個數字格之間都有實體隔牆，球掉進哪一格就只會停在那一格，
+// 而且隔牆夠高，同一格可以疊好幾顆球（見 restingCounts）。
+const POCKET_TOP = 300;
+const BALL_R = 6;
+const BALL_D = BALL_R * 2;
+
+// 每個數字格目前已經堆了幾顆球（用來把新球疊在舊球上面，而不是疊在一起穿模）
+let restingCounts = new Array(COLS).fill(0);
 
 // 初始化彈珠台 (由 main.js 切換 tab 時呼叫)
 export function initPinball() {
@@ -50,6 +61,38 @@ export function initPinball() {
   }
 }
 
+// 畫出底部號碼格之間的隔牆（純視覺，實體碰撞在物理迴圈裡另外處理）
+function drawPocketWalls() {
+  ctx.fillStyle = '#a9854f';
+  for (let wx = 30; wx <= 300; wx += 30) {
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(wx - 2, POCKET_TOP, 4, canvas.height - POCKET_TOP, 2);
+    } else {
+      ctx.rect(wx - 2, POCKET_TOP, 4, canvas.height - POCKET_TOP);
+    }
+    ctx.fill();
+  }
+}
+
+// 畫出每一格底部已經堆疊、靜止的球
+function drawRestingBalls() {
+  for (let slot = 0; slot < COLS; slot++) {
+    const count = restingCounts[slot];
+    for (let k = 0; k < count; k++) {
+      const cx = slot * 30 + 15;
+      const cy = canvas.height - BALL_R - k * BALL_D;
+      ctx.beginPath();
+      ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
+      ctx.fillStyle = '#b23a2b';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+}
+
 // 物理運算與畫面渲染迴圈
 function updatePhysics() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -62,15 +105,9 @@ function updatePhysics() {
     ctx.fill();
   });
 
-  // 繪製分隔線 (0-9 洞口)
-  ctx.strokeStyle = 'rgba(169, 133, 79, 0.3)';
-  ctx.lineWidth = 2;
-  for (let i = 1; i < COLS; i++) {
-    ctx.beginPath();
-    ctx.moveTo(i * 30, canvas.height - 30);
-    ctx.lineTo(i * 30, canvas.height);
-    ctx.stroke();
-  }
+  // 繪製底部號碼格隔牆與已堆疊的球
+  drawPocketWalls();
+  drawRestingBalls();
 
   // 繪製發射道的導引彎道（純視覺，讓玩家看得出球會從這裡繞進盤面）
   ctx.save();
@@ -80,7 +117,7 @@ function updatePhysics() {
   ctx.beginPath();
   ctx.moveTo(315, canvas.height);
   ctx.lineTo(315, CURVE_BOTTOM);
-  ctx.quadraticCurveTo(315, CURVE_TOP, 255, CURVE_TOP - 10);
+  ctx.quadraticCurveTo(315, CURVE_BOTTOM - 90, 255, CURVE_BOTTOM - 100);
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.restore();
@@ -96,15 +133,18 @@ function updatePhysics() {
     b.vx *= 0.99;
     b.vy *= 0.99;
 
-    // 導引彎道：球還在發射道範圍內、尚未完成轉彎時，
-    // 依照目前高度算出轉彎進度 t (0=剛進彎道／垂直向上, 1=轉彎完成／水平向左)，
-    // 把目前速度大小重新分配到 vx / vy 上，讓球自然地「轉」進盤面，
-    // 而不是像原本那樣永遠 vx=0、直上直下出不了發射道。
-    if (!b.bendDone && b.y <= CURVE_BOTTOM && b.x > 260) {
-      let t = Math.max(0, Math.min(1, (CURVE_BOTTOM - b.y) / (CURVE_BOTTOM - CURVE_TOP)));
+    // 導引彎道：球還沒轉完彎、且已經進入彎道高度範圍時，
+    // 用「已經在彎道裡待了幾格」(bendFrames) 算出轉彎進度 t (0→1)，
+    // 把目前速度大小重新分配到 vx / vy 上，讓球自然地「轉」進盤面。
+    // 用固定影格數而非固定 y 座標判斷「轉完了沒」，
+    // 才不會因為力道不同、爬升速度不同，導致轉一半就沒動能卡在半空中。
+    if (!b.bendDone && b.y <= CURVE_BOTTOM) {
+      if (b.bendFrames < 0) b.bendFrames = 0;
+      let t = Math.min(1, b.bendFrames / BEND_FRAMES);
       let speed = Math.hypot(b.vx, b.vy);
       b.vx = -speed * Math.sin(t * Math.PI / 2);
       b.vy = -speed * Math.cos(t * Math.PI / 2);
+      b.bendFrames++;
       if (t >= 1) {
         b.bendDone = true; // 轉彎完成，正式進入盤面，之後跟一般彈珠一樣受重力與釘子影響
       }
@@ -117,6 +157,16 @@ function updatePhysics() {
     if (b.x - b.r < 0) { b.x = b.r; b.vx *= -0.6; }
     if (b.x + b.r > canvas.width) { b.x = canvas.width - b.r; b.vx *= -0.6; }
     if (b.y - b.r < 0) { b.y = b.r; b.vy *= -0.6; }
+
+    // 底部號碼格隔牆碰撞：球一旦進入口袋區高度，就不能再跨過隔牆到隔壁格
+    if (b.y + b.r > POCKET_TOP) {
+      for (let wx = 30; wx <= 300; wx += 30) {
+        if (Math.abs(b.x - wx) < b.r) {
+          if (b.x < wx) { b.x = wx - b.r; b.vx *= -0.4; }
+          else { b.x = wx + b.r; b.vx *= -0.4; }
+        }
+      }
+    }
 
     // 釘子碰撞
     pegs.forEach(p => {
@@ -141,36 +191,39 @@ function updatePhysics() {
       }
     });
 
-    // 繪製彈珠
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-    ctx.fillStyle = '#b23a2b';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // 判斷是否已經落到底、疊在該格目前的球堆最上面
+    let slotIndex = Math.floor(b.x / 30);
+    if (slotIndex < 0) slotIndex = 0;
+    if (slotIndex > 9) slotIndex = 9;
+    const stackTop = canvas.height - restingCounts[slotIndex] * BALL_D - BALL_R;
 
-    // 判斷是否落到底部洞口
-    if (b.y > canvas.height + b.r) {
-      if (!b.bendDone) {
-        // 力道不夠、還沒轉出發射道就掉回去了：不扣球，讓玩家重打一次
-        activeBall = null;
-        isAnimating = false;
-      } else {
-        // 已經成功轉進盤面，不管最後落在哪都算數（即使彈跳後貼著右邊界掉下去）
-        let slotIndex = Math.floor(b.x / 30);
-        if (slotIndex < 0) slotIndex = 0;
-        if (slotIndex > 9) slotIndex = 9;
+    if (b.bendDone && b.y >= stackTop) {
+      // 已經成功轉進盤面、且落到目前球堆頂端：算數，疊上去
+      b.x = slotIndex * 30 + 15;
+      b.y = stackTop;
+      restingCounts[slotIndex]++;
 
-        pinballDigits.push(slotIndex);
-        updatePinballStatus();
-        activeBall = null;
-        isAnimating = false;
+      pinballDigits.push(slotIndex);
+      updatePinballStatus();
+      activeBall = null;
+      isAnimating = false;
 
-        if (pinballDigits.length === 9) {
-          setTimeout(finalizePinballNumbers, 300);
-        }
+      if (pinballDigits.length === 9) {
+        setTimeout(finalizePinballNumbers, 300);
       }
+    } else if (!b.bendDone && b.y > canvas.height + b.r) {
+      // 力道不夠、還沒轉出發射道就掉回去了：不扣球，讓玩家重打一次
+      activeBall = null;
+      isAnimating = false;
+    } else {
+      // 還在飛行中，畫出目前位置
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#b23a2b';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
     }
   }
 
@@ -180,7 +233,9 @@ function updatePhysics() {
 export function pullPlunger() {
   if (isAnimating || pinballDigits.length >= 9) return;
   isPulling = true;
-  document.getElementById('pinballPlunger').classList.add('pulled');
+  const plunger = document.getElementById('pinballPlunger');
+  plunger.classList.remove('rebounding');
+  plunger.classList.add('pulled');
 
   // 蓄力效果 (0 到 100)
   power = 0;
@@ -196,7 +251,9 @@ export function releasePlunger() {
   if (!isPulling || isAnimating || pinballDigits.length >= 9) return;
   isPulling = false;
   clearInterval(powerTimer);
-  document.getElementById('pinballPlunger').classList.remove('pulled');
+  const plunger = document.getElementById('pinballPlunger');
+  plunger.classList.remove('pulled');
+  plunger.classList.add('rebounding'); // 放開後拉桿彈回原位的動態
 
   // 根據蓄力給予初始向上速度
   let initialVy = -(12 + (power / 100) * 12);
@@ -207,10 +264,11 @@ export function releasePlunger() {
   activeBall = {
     x: 315,
     y: canvas.height - 10,
-    r: 6,
+    r: BALL_R,
     vx: 0,
     vy: initialVy,
-    bendDone: false
+    bendDone: false,
+    bendFrames: -1
   };
 }
 
@@ -227,6 +285,7 @@ function updatePinballStatus() {
 }
 
 function finalizePinballNumbers() {
+  // 依照小鋼珠打出的先後順序組成三組三位數
   const n1 = parseInt(pinballDigits.slice(0, 3).join(''));
   const n2 = parseInt(pinballDigits.slice(3, 6).join(''));
   const n3 = parseInt(pinballDigits.slice(6, 9).join(''));
@@ -242,8 +301,10 @@ export function resetPinballState() {
   pinballDigits = [];
   isAnimating = false;
   activeBall = null;
+  restingCounts = new Array(COLS).fill(0);
   document.getElementById('pinballRemain').innerText = "9";
   document.getElementById('pinballCollected').innerText = "尚未擊出";
   document.getElementById('powerFill').style.height = `0%`;
+  document.getElementById('pinballPlunger')?.classList.remove('pulled', 'rebounding');
   initPinball();
 }
