@@ -7,7 +7,7 @@ import {
 } from './modes/slot-machine.js';
 // 匯入彈珠台模組
 import { 
-  pullPlunger, releasePlunger, resetPinballState 
+  pullPlunger, releasePlunger, resetPinballState, initPinball 
 } from './modes/pinball.js';
 
 let lineUserProfile = null;
@@ -36,24 +36,21 @@ async function initializeLiff() {
 window.switchMode = function(mode) {
   clearSlotTimer();
   
-  // 移除所有 tab 的 active 狀態
   const tabBtns = document.querySelectorAll('.tab-btn');
   tabBtns.forEach(btn => btn.classList.remove('active'));
   
-  // 隱藏所有模式區塊
   document.getElementById('modeInput').style.display = 'none';
   document.getElementById('modeRandom').style.display = 'none';
   document.getElementById('modeSlot').style.display = 'none';
   const modePinball = document.getElementById('modePinball');
   if (modePinball) modePinball.style.display = 'none';
   
-  // 清空輸入值
+  // 清空輸入
   document.getElementById('num1').value = "";
   document.getElementById('num2').value = "";
   document.getElementById('num3').value = "";
   document.getElementById('randomDisplay').innerHTML = ""; 
   
-  // 根據傳入的模式設定 active 並顯示對應區塊
   if (mode === 'input') {
     tabBtns[0].classList.add('active');
     document.getElementById('modeInput').style.display = 'block';
@@ -63,12 +60,12 @@ window.switchMode = function(mode) {
   } else if (mode === 'slot') {
     tabBtns[2].classList.add('active');
     document.getElementById('modeSlot').style.display = 'block';
-    if (!slotRowState[0]) {
-      startSlotTimeoutTimer(0);
-    }
+    if (!slotRowState[0]) startSlotTimeoutTimer(0);
   } else if (mode === 'pinball') {
     if (tabBtns[3]) tabBtns[3].classList.add('active');
     if (modePinball) modePinball.style.display = 'block';
+    // 在這裡初始化彈珠台畫布
+    setTimeout(initPinball, 50); 
   }
 };
 
