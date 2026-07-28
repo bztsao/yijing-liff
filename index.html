@@ -102,13 +102,13 @@
 <div id="pinballCollected" style="letter-spacing: 2px; font-weight:bold;">尚未擊出</div>
 </div>
 
-<!-- 遊戲區：盤面(玻璃內) + 拉桿(機台外部右下) -->
+<!-- 遊戲區：盤面(玻璃內，含底部隔牆數字格) + 拉桿(盤面正下方右側，拉桿位置在彈珠發射口下方) -->
 <div class="pinball-body">
 <div class="pinball-play-area">
-<!-- 真實物理運算畫布 (寬330, 含右側發射道/導引彎道) -->
-<canvas id="pachinkoCanvas" width="330" height="360" style="display: block; width: 100%; height: auto;"></canvas>
+<!-- 真實物理運算畫布 (寬330 高400，含右側發射道/導引彎道 + 底部隔牆數字格) -->
+<canvas id="pachinkoCanvas" width="330" height="400" style="display: block; width: 100%; height: auto;"></canvas>
 
-<!-- 底部號碼標示 (只做視覺裝飾，實際碰撞在 Canvas 內) -->
+<!-- 底部號碼標示 (只做視覺裝飾，實際隔牆/碰撞/堆疊在 Canvas 內) -->
 <div class="pinball-slots-row">
 <div class="p-slot">0</div><div class="p-slot">1</div>
 <div class="p-slot">2</div><div class="p-slot">3</div>
@@ -119,12 +119,16 @@
 </div>
 </div>
 
-<!-- 發射拉桿：機台外部右下方，不再蓋在盤面上 -->
+<!-- 發射拉桿：位在盤面正下方、對齊發射口，往下拉、放開後彈回 -->
+<div class="pinball-shooter-row">
 <div class="pinball-shooter-area">
 <div class="power-bar"><div class="power-fill" id="powerFill"></div></div>
 <div class="pinball-shooter" id="pinballPlunger" onmousedown="pullPlunger()" onmouseup="releasePlunger()" ontouchstart="pullPlunger()" ontouchend="releasePlunger()">
+<div class="p-assembly">
 <div class="p-rod"></div>
 <div class="p-knob"></div>
+</div>
+</div>
 </div>
 </div>
 </div>
