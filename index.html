@@ -13,127 +13,129 @@
 <body>
 <div class="app" id="app">
 
-  <header>
-    <div class="eyebrow">傅 佩 榮 · 六 十 四 卦 · 數 字 卦</div>
-    <h1 id="greetingTitle">問 卦</h1>
-    <div class="sub">依傅佩榮教授之法，心靜默問，填入三組三位數字。</div>
-  </header>
+<header>
+<div class="eyebrow">傅 佩 榮 · 六 十 四 卦 · 數 字 卦</div>
+<h1 id="greetingTitle">問 卦</h1>
+<div class="sub">依傅佩榮教授之法，心靜默問，填入三組三位數字。</div>
+</header>
 
-  <!-- 輸入卡片 -->
-  <div class="card" id="inputCard">
-    <label class="field-label">想問之事</label>
-    <textarea id="question" placeholder="例如: 這個決定現在適合行動嗎？"></textarea>
-    
-    <div class="mode-tabs">
-      <button type="button" class="tab-btn active" onclick="switchMode('input')">自由輸入</button>
-      <button type="button" class="tab-btn" onclick="switchMode('random')">交予天意</button>
-      <button type="button" class="tab-btn" id="tabSlotBtn" onclick="switchMode('slot')">🎰 乾坤拉霸</button>
-      <button type="button" class="tab-btn" onclick="switchMode('pinball')">🔮 彈珠台</button> 
-    </div>
+<!-- 輸入卡片 -->
+<div class="card" id="inputCard">
+<label class="field-label">想問之事</label>
+<textarea id="question" placeholder="例如: 這個決定現在適合行動嗎？"></textarea>
 
-    <!-- 模式 1: 自由輸入 -->
-    <div id="modeInput">
-      <label class="field-label">請輸入三組數字</label>
-      <div class="numbers-input">
-        <input type="number" pattern="\d*" id="num1" placeholder="第一組" min="1">
-        <input type="number" pattern="\d*" id="num2" placeholder="第二組" min="1">
-        <input type="number" pattern="\d*" id="num3" placeholder="第三組" min="1">
-      </div>
-    </div>
+<div class="mode-tabs">
+<button type="button" class="tab-btn active" onclick="switchMode('input')">自由輸入</button>
+<button type="button" class="tab-btn" onclick="switchMode('random')">交予天意</button>
+<button type="button" class="tab-btn" id="tabSlotBtn" onclick="switchMode('slot')">🎰 乾坤拉霸</button>
+<button type="button" class="tab-btn" onclick="switchMode('pinball')">🔮 彈珠台</button>
+</div>
 
-    <!-- 模式 2: 隨機 -->
-    <div id="modeRandom" style="display: none; text-align: center; padding: 16px 0;">
-      <div id="randomDisplay" style="font-family: 'Noto Serif TC', serif; font-size: 32px; font-weight: 900; color: var(--seal); letter-spacing: 4px; margin-bottom: 12px; min-height: 48px; line-height: 48px;"></div>
-      <button type="button" id="randomNumBtn" style="width: 100%; border: 1px dashed var(--brass-soft); background: rgba(169, 133, 79, 0.08); color: var(--brass-soft); font-weight: 600; padding: 14px 0; border-radius: 4px; cursor: pointer;">
-        🎲 點擊一鍵隨機抽取
-      </button>
-    </div>
+<!-- 模式 1: 自由輸入 -->
+<div id="modeInput">
+<label class="field-label">請輸入三組數字</label>
+<div class="numbers-input">
+<input type="number" pattern="\d*" id="num1" placeholder="第一組" min="1">
+<input type="number" pattern="\d*" id="num2" placeholder="第二組" min="1">
+<input type="number" pattern="\d*" id="num3" placeholder="第三組" min="1">
+</div>
+</div>
 
-    <!-- 模式 3: 拉霸機 -->
-    <div id="modeSlot" style="display: none;">
-      <div class="slot-machine-container">
-        <!-- 上台 -->
-        <div class="slot-row">
-          <div class="slot-label">上台</div>
-          <div class="slot-window">
-            <div class="slot-reel"><div class="slot-strip" id="reel-0-0"></div></div>
-            <div class="slot-reel"><div class="slot-strip" id="reel-0-1"></div></div>
-            <div class="slot-reel"><div class="slot-strip" id="reel-0-2"></div></div>
-          </div>
-          <div class="lever-container" id="lever-0" onmousedown="pullLever(0)" onmouseup="releaseLever(0)" ontouchstart="pullLever(0)" ontouchend="releaseLever(0)">
-            <div class="lever-arm"><div class="lever-ball"></div></div>
-            <div class="lever-base"></div>
-          </div>
-        </div>
-        <!-- 中台 -->
-        <div class="slot-row">
-          <div class="slot-label">中台</div>
-          <div class="slot-window">
-            <div class="slot-reel"><div class="slot-strip" id="reel-1-0"></div></div>
-            <div class="slot-reel"><div class="slot-strip" id="reel-1-1"></div></div>
-            <div class="slot-reel"><div class="slot-strip" id="reel-1-2"></div></div>
-          </div>
-          <div class="lever-container disabled" id="lever-1" onmousedown="pullLever(1)" onmouseup="releaseLever(1)" ontouchstart="pullLever(1)" ontouchend="releaseLever(1)">
-            <div class="lever-arm"><div class="lever-ball"></div></div>
-            <div class="lever-base"></div>
-          </div>
-        </div>
-        <!-- 下台 -->
-        <div class="slot-row">
-          <div class="slot-label">下台</div>
-          <div class="slot-window">
-            <div class="slot-reel"><div class="slot-strip" id="reel-2-0"></div></div>
-            <div class="slot-reel"><div class="slot-strip" id="reel-2-1"></div></div>
-            <div class="slot-reel"><div class="slot-strip" id="reel-2-2"></div></div>
-          </div>
-          <div class="lever-container disabled" id="lever-2" onmousedown="pullLever(2)" onmouseup="releaseLever(2)" ontouchstart="pullLever(2)" ontouchend="releaseLever(2)">
-            <div class="lever-arm"><div class="lever-ball"></div></div>
-            <div class="lever-base"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- 在 modeSlot 區塊的下方，新增 modePinball 區塊 -->
-    <div id="modePinball" style="display: none;">
-      <div class="pinball-machine-container">
-        <!-- 狀態顯示 -->
-        <div class="pinball-header">
-          <div>剩餘：<span id="pinballRemain" style="color:var(--seal-bright); font-weight:bold; font-size:16px;">9</span> 球</div>
-          <div id="pinballCollected" style="letter-spacing: 2px; font-weight:bold;">尚未擊出</div>
-        </div>
-        
-        <!-- 遊戲區 -->
-        <div class="pinball-play-area">
-          <!-- 真實物理運算畫布 (寬330, 含右側發射道) -->
-          <canvas id="pachinkoCanvas" width="330" height="360" style="display: block; width: 100%; height: auto;"></canvas>
-          
-          <!-- 底部號碼標示 (只做視覺裝飾，實際碰撞在 Canvas 內) -->
-          <div class="pinball-slots-row">
-            <div class="p-slot">0</div><div class="p-slot">1</div>
-            <div class="p-slot">2</div><div class="p-slot">3</div>
-            <div class="p-slot">4</div><div class="p-slot">5</div>
-            <div class="p-slot">6</div><div class="p-slot">7</div>
-            <div class="p-slot">8</div><div class="p-slot">9</div>
-            <div class="p-slot shooter-slot"></div> <!-- 發射道底部佔位 -->
-          </div>
-          
-          <!-- 發射拉桿與蓄力槽 -->
-          <div class="pinball-shooter-area">
-            <div class="power-bar"><div class="power-fill" id="powerFill"></div></div>
-            <div class="pinball-shooter" id="pinballPlunger" onmousedown="pullPlunger()" onmouseup="releasePlunger()" ontouchstart="pullPlunger()" ontouchend="releasePlunger()">
-              <div class="p-rod"></div>
-              <div class="p-knob"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <button class="primary" id="startBtn">開始解卦</button>
-  </div>
+<!-- 模式 2: 隨機 -->
+<div id="modeRandom" style="display: none; text-align: center; padding: 16px 0;">
+<div id="randomDisplay" style="font-family: 'Noto Serif TC', serif; font-size: 32px; font-weight: 900; color: var(--seal); letter-spacing: 4px; margin-bottom: 12px; min-height: 48px; line-height: 48px;"></div>
+<button type="button" id="randomNumBtn" style="width: 100%; border: 1px dashed var(--brass-soft); background: rgba(169, 133, 79, 0.08); color: var(--brass-soft); font-weight: 600; padding: 14px 0; border-radius: 4px; cursor: pointer;">
+🎲 點擊一鍵隨機抽取
+</button>
+</div>
 
-  <!-- 結果區 -->
-  <div id="resultArea"></div>
+<!-- 模式 3: 拉霸機 -->
+<div id="modeSlot" style="display: none;">
+<div class="slot-machine-container">
+<!-- 上台 -->
+<div class="slot-row">
+<div class="slot-label">上台</div>
+<div class="slot-window">
+<div class="slot-reel"><div class="slot-strip" id="reel-0-0"></div></div>
+<div class="slot-reel"><div class="slot-strip" id="reel-0-1"></div></div>
+<div class="slot-reel"><div class="slot-strip" id="reel-0-2"></div></div>
+</div>
+<div class="lever-container" id="lever-0" onmousedown="pullLever(0)" onmouseup="releaseLever(0)" ontouchstart="pullLever(0)" ontouchend="releaseLever(0)">
+<div class="lever-arm"><div class="lever-ball"></div></div>
+<div class="lever-base"></div>
+</div>
+</div>
+<!-- 中台 -->
+<div class="slot-row">
+<div class="slot-label">中台</div>
+<div class="slot-window">
+<div class="slot-reel"><div class="slot-strip" id="reel-1-0"></div></div>
+<div class="slot-reel"><div class="slot-strip" id="reel-1-1"></div></div>
+<div class="slot-reel"><div class="slot-strip" id="reel-1-2"></div></div>
+</div>
+<div class="lever-container disabled" id="lever-1" onmousedown="pullLever(1)" onmouseup="releaseLever(1)" ontouchstart="pullLever(1)" ontouchend="releaseLever(1)">
+<div class="lever-arm"><div class="lever-ball"></div></div>
+<div class="lever-base"></div>
+</div>
+</div>
+<!-- 下台 -->
+<div class="slot-row">
+<div class="slot-label">下台</div>
+<div class="slot-window">
+<div class="slot-reel"><div class="slot-strip" id="reel-2-0"></div></div>
+<div class="slot-reel"><div class="slot-strip" id="reel-2-1"></div></div>
+<div class="slot-reel"><div class="slot-strip" id="reel-2-2"></div></div>
+</div>
+<div class="lever-container disabled" id="lever-2" onmousedown="pullLever(2)" onmouseup="releaseLever(2)" ontouchstart="pullLever(2)" ontouchend="releaseLever(2)">
+<div class="lever-arm"><div class="lever-ball"></div></div>
+<div class="lever-base"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- 模式 4: 彈珠台 (真實物理版，拉桿在盤面外部右下方) -->
+<div id="modePinball" style="display: none;">
+<div class="pinball-machine-container">
+<!-- 狀態顯示 -->
+<div class="pinball-header">
+<div>剩餘：<span id="pinballRemain" style="color:var(--seal-bright); font-weight:bold; font-size:16px;">9</span> 球</div>
+<div id="pinballCollected" style="letter-spacing: 2px; font-weight:bold;">尚未擊出</div>
+</div>
+
+<!-- 遊戲區：盤面(玻璃內) + 拉桿(機台外部右下) -->
+<div class="pinball-body">
+<div class="pinball-play-area">
+<!-- 真實物理運算畫布 (寬330, 含右側發射道/導引彎道) -->
+<canvas id="pachinkoCanvas" width="330" height="360" style="display: block; width: 100%; height: auto;"></canvas>
+
+<!-- 底部號碼標示 (只做視覺裝飾，實際碰撞在 Canvas 內) -->
+<div class="pinball-slots-row">
+<div class="p-slot">0</div><div class="p-slot">1</div>
+<div class="p-slot">2</div><div class="p-slot">3</div>
+<div class="p-slot">4</div><div class="p-slot">5</div>
+<div class="p-slot">6</div><div class="p-slot">7</div>
+<div class="p-slot">8</div><div class="p-slot">9</div>
+<div class="p-slot chute-slot"></div> <!-- 對齊 canvas 內發射道，純視覺留白 -->
+</div>
+</div>
+
+<!-- 發射拉桿：機台外部右下方，不再蓋在盤面上 -->
+<div class="pinball-shooter-area">
+<div class="power-bar"><div class="power-fill" id="powerFill"></div></div>
+<div class="pinball-shooter" id="pinballPlunger" onmousedown="pullPlunger()" onmouseup="releasePlunger()" ontouchstart="pullPlunger()" ontouchend="releasePlunger()">
+<div class="p-rod"></div>
+<div class="p-knob"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<button class="primary" id="startBtn">開始解卦</button>
+</div>
+
+<!-- 結果區 -->
+<div id="resultArea"></div>
 
 </div>
 </body>
