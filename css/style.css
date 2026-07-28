@@ -277,6 +277,7 @@ label.field-label{
 }
 
 /* ---- 彈珠台模式 (Pinball) ---- */
+/* ---- 彈珠台模式 (真實物理版) ---- */
 .pinball-machine-container {
   background: #2a241c;
   border: 2px solid var(--brass);
@@ -299,34 +300,20 @@ label.field-label{
 }
 .pinball-play-area {
   position: relative;
-  height: 320px;
   background: radial-gradient(circle at top, #3a2e1b, #17140f);
   border: 1px solid #7d6640;
   border-radius: 6px;
   overflow: hidden;
+  /* 強制維持 330:360 比例 */
+  aspect-ratio: 330 / 360; 
 }
-.pinball-board {
-  position: absolute;
-  top: 0; left: 0; right: 40px; bottom: 30px;
-}
-.pinball-ball {
-  width: 16px;
-  height: 16px;
-  background: radial-gradient(circle at 30% 30%, #fff, #b23a2b, #4a0000);
-  border-radius: 50%;
-  position: absolute;
-  bottom: 0;
-  right: -32px; /* 初始位置在發射通道 */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-  z-index: 10;
-}
+
 .pinball-slots-row {
   position: absolute;
-  bottom: 0; left: 0; right: 40px;
+  bottom: 0; left: 0; right: 0;
   display: flex;
-  height: 30px;
-  border-top: 2px dashed rgba(169, 133, 79, 0.4);
+  height: 25px;
+  background: rgba(0,0,0,0.4);
 }
 .p-slot {
   flex: 1;
@@ -336,17 +323,39 @@ label.field-label{
   color: #d9cdae;
   font-family: "Noto Serif TC", serif;
   font-weight: 700;
-  font-size: 14px;
-  border-right: 1px solid rgba(169, 133, 79, 0.2);
+  font-size: 12px;
 }
-.p-slot:last-child { border-right: none; }
+.p-slot:not(:last-child) { border-right: 1px solid rgba(169, 133, 79, 0.2); }
+.shooter-slot { flex: 1.1; border-left: 2px solid #7d6640; }
 
-/* 彈珠拉桿 */
-.pinball-shooter {
+/* 發射拉桿區域 */
+.pinball-shooter-area {
   position: absolute;
   bottom: 0; right: 0;
-  width: 40px; height: 120px;
-  border-left: 2px solid #7d6640;
+  width: 9%; /* 約對齊右側軌道 */
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+.power-bar {
+  position: absolute;
+  right: 110%; bottom: 20px;
+  width: 6px; height: 60px;
+  background: #17140f;
+  border: 1px solid #7d6640;
+  border-radius: 3px;
+  display: flex;
+  align-items: flex-end;
+}
+.power-fill {
+  width: 100%; height: 0%;
+  background: linear-gradient(0deg, #ff5252, #ffeb3b);
+  transition: height 0.05s;
+}
+.pinball-shooter {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -355,27 +364,22 @@ label.field-label{
   -webkit-user-select: none;
 }
 .p-rod {
-  width: 6px; height: 50px;
+  width: 6px; height: 40px;
   background: linear-gradient(90deg, #d4af37, #fff, #aa820a);
-  transition: transform 0.2s;
   transform-origin: bottom;
 }
 .p-knob {
-  width: 24px; height: 24px;
+  width: 20px; height: 20px;
   background: radial-gradient(circle at 30% 30%, #a9854f, #2a2620);
   border-radius: 50%;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.6);
-  transition: transform 0.2s;
+  transition: transform 0.1s;
 }
 
 /* 拉桿互動狀態 */
-.pinball-shooter.pulled .p-rod {
-  transform: scaleY(0.4);
-}
-.pinball-shooter.pulled .p-knob {
-  transform: translateY(30px);
-}
+.pinball-shooter.pulled .p-rod { transform: scaleY(0.5); }
+.pinball-shooter.pulled .p-knob { transform: translateY(20px); }
 
 /* ---- 展開式說明清單 ---- */
 details.info-accordion {
