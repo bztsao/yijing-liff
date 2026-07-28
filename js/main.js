@@ -5,12 +5,18 @@ import {
   initSlotReels, clearSlotTimer, startSlotTimeoutTimer, 
   pullLever, releaseLever, resetSlotState, slotRowState 
 } from './modes/slot-machine.js';
+// 匯入彈珠台模組
+import { 
+  pullPlunger, releasePlunger, resetPinballState 
+} from './modes/pinball.js';
 
 let lineUserProfile = null;
 
 // 將所有外部模組與自定義函數掛載到 window，讓 HTML 的 onClick 找得到
 window.pullLever = pullLever;
 window.releaseLever = releaseLever;
+window.pullPlunger = pullPlunger;     // 綁定彈珠台拉桿事件
+window.releasePlunger = releasePlunger; // 綁定彈珠台放開事件
 
 async function initializeLiff() {
   try {
@@ -26,7 +32,7 @@ async function initializeLiff() {
   }
 }
 
-// UI 模式切換（修復嚴格模式下的 event 錯誤）
+// UI 模式切換
 window.switchMode = function(mode) {
   clearSlotTimer();
   
@@ -34,10 +40,14 @@ window.switchMode = function(mode) {
   const tabBtns = document.querySelectorAll('.tab-btn');
   tabBtns.forEach(btn => btn.classList.remove('active'));
   
+  // 隱藏所有模式區塊
   document.getElementById('modeInput').style.display = 'none';
   document.getElementById('modeRandom').style.display = 'none';
   document.getElementById('modeSlot').style.display = 'none';
+  const modePinball = document.getElementById('modePinball');
+  if (modePinball) modePinball.style.display = 'none';
   
+  // 清空輸入值
   document.getElementById('num1').value = "";
   document.getElementById('num2').value = "";
   document.getElementById('num3').value = "";
@@ -56,6 +66,9 @@ window.switchMode = function(mode) {
     if (!slotRowState[0]) {
       startSlotTimeoutTimer(0);
     }
+  } else if (mode === 'pinball') {
+    if (tabBtns[3]) tabBtns[3].classList.add('active');
+    if (modePinball) modePinball.style.display = 'block';
   }
 };
 
@@ -98,6 +111,7 @@ function escapeHtml(s) {
 
 window.resetApp = function() {
   resetSlotState();
+  resetPinballState(); // 重置彈珠台狀態
   document.getElementById('resultArea').innerHTML = "";
   document.getElementById('question').value = "";
   document.getElementById('num1').value = "";
@@ -210,11 +224,14 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('startBtn').addEventListener('click', () => {
+    // 檢查拉霸機模式防呆
     if(document.getElementById('modeSlot').style.display === 'block'){
        if(!slotRowState[0] || !slotRowState[1] || !slotRowState[2]){
            return alert("請先拉動完三台乾坤拉霸機喔！");
        }
     }
+    
+    // 取得三組數字 (如果是彈珠台模式，也會在 finalizePinballNumbers 中自動寫入這三個 input)
     const n1 = parseInt(document.getElementById('num1').value);
     const n2 = parseInt(document.getElementById('num2').value);
     const n3 = parseInt(document.getElementById('num3').value);
